@@ -52,7 +52,14 @@ class Parser
             } else {
                 $pos = strpos($line, ':');
                 if ($pos === false) {
-                    throw new \UnexpectedValueException('Parse error, no colon in line "' . $line . '" found');
+
+                    /*
+                     * Unexpected value, skip this line and collect it as warning for later use
+                     */
+
+                    $_warnings['UnexpectedValue']['line_'.$i] = $line;
+                    continue;
+
                 }
 
                 $value = (string)substr($line, $pos + (isset($line[$pos + 1]) && $line[$pos + 1] === ' ' ? 2 : 1));
@@ -73,6 +80,9 @@ class Parser
         $key = key($fields);
 
         if ($key === 'Event') {
+
+            if(isset($_warnings)) $fields['_warnings'] = $_warnings; // Add warnings to event
+
             return new Event($fields);
         }
 
